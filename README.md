@@ -8,7 +8,7 @@ To create a new program:
 
 ```python
 p = cesel.Program('Program Name')
-p.add(1, 2, 3) # Add register 2 to register 3 and store in register 1
+p.add8(1, 2, 3) # Add register 2 to register 3 and store in register 1
 # etc
 ```
 
