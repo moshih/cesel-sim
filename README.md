@@ -1,4 +1,4 @@
-#Instruction Set simulator for CESEL#
+# Instruction Set simulator for CESEL #
 
 Author: Kevin Kiningham
 
