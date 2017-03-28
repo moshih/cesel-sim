@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 import numpy as np
 
 # Instruction constants
@@ -227,13 +230,13 @@ def main(args=None):
     R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
 
     # Program Definition
-    p = Program(regfile={i: i for i in range(16)})
+    p = Program()
     p.xor(R0, R0, R0)
     p.add8(R0, R0, R0)
     p.mul8(R1, R1, R0)
 
     # Interpreter
-    i = Interpeter(program=p)
+    i = Interpreter(program=p, regfile={i: i for i in range(16)})
     i.step()
     i.step()
 
