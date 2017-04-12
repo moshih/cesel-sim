@@ -14,24 +14,103 @@ REGFILE_N_REGS    = 16
 REGFILE_DATA_BITS = 8
 REGFILE_ADDR_BITS = np.uint(np.ceil(np.log2(REGFILE_N_REGS)))
 
-# EX stage constants
-EX_OP_BITS     = 4
+# Instruction formats
+# | 5 | 4 | 3 | 2 | 1 | 0 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0
+# | 0 | im        | SO    | rw/r1         | r0            | 0   0
+# | 1   0 | im    | AO    | rw/r1         | r0            | 0   0
+# | 1   1 | 0   1 | CO    | rw/r1         | r0            | 0   0
 
-EX_OP_XOR       = 0b0000
-EX_OP_AND       = 0b0001
-EX_OP_XNOR      = 0b0010
-EX_OP_ROR       = 0b0011
-EX_OP_ADD       = 0b0100
-EX_OP_SUB       = 0b0101
-EX_OP_MUL       = 0b0110
-EX_OP_GF2       = 0b0111
-EX_OP_BITSLICE  = 0b1000
-EX_OP_PERMUTE   = 0b1001
-EX_OP_SBOX      = 0b1010
-EX_OP_RESERVED1 = 0b1100 # Load immediate
-EX_OP_RESERVED2 = 0b1101
-EX_OP_RESERVED3 = 0b1110
-EX_OP_RESERVED4 = 0b1111 # Extended Instr
+# Shift/Add by short constant
+# | SO    | 0 | im3       | rw            | r0            | 0   0
+# | AO    | 1 | im3       | rw            | r0            | 0   0
+
+# 2 Reg Operations
+# | LO    | 0   0 | I | I | rw/r1         | r0            | 0   1
+# | SO    | 0   1 | X   X | rw/r1         | r0            | 0   1
+# | AO    | 1   0 | X   X | rw/r1         | r0            | 0   1
+# | CO    | 1   1 | X   X | rw/r1         | r0            | 0   1
+
+# Wide arithmatic operations
+# | AO    | C |           | rw/r1         | r0            | 1   0
+
+# Long and "Special" instructions
+# | LDI   | imm4          | rw            | imm4          | 1   1
+# | AND   | imm4          | rw            | imm4          | 1   1
+# | XOR   | imm4          | rw            | imm4          | 1   1
+# | 1   1 | LOAD_LONG     | rw            | size          | 1   1
+# | 1   1 | PUSH          | r1            | index         | 1   1
+# | 1   1 | PULL          | rw            | index         | 1   1
+# | 1   1 | LOOP_BEGIN    | 1   1   1   1 | imm4          | 1   1
+# | 1   1 | LOOP_END      | r1            | 1   1   1   1 | 1   1
+# | 1   1 | HALT          | 1   1   1   1   1   1   1   1 | 1   1
+
+# Broadcast low16/high16 - Take value in lane N or N + 16 and copy to all lanes
+# | 0   0 | rw            | r0            | imm4          | 0   0
+# | 0   1 | rw            | r0            | imm4          | 0   0
+
+# ROR by immediate - Treat registers as 32 bit lanes and shift by immediate (
+# | 1   0 | rw            | r0            | imm4          | 0   0
+# | 1   1 | rw            | r0            | imm4          | 0   0
+
+# 3 Reg operation - R1 is in the same 4 reg group as R0
+# | LO    | rw            | r0            | r1    | 0   0 | 0   1
+# | SO    | rw            | r0            | r1    | 0   1 | 0   1
+# | AO    | rw            | r0            | r1    | 1   0 | 0   1
+# | CO    | rw            | r0            | r1    | 1   1 | 0   1
+
+# Wide arithmatic operation - operate on 32 bits
+# 
+
+
+
+
+
+# Logical Ops (LO)
+EX_OP_AND       = 0b00
+EX_OP_OR        = 0b01
+EX_OP_XOR       = 0b10
+EX_OP_NOT       = 0b11
+
+# Shift Ops (SO)
+EX_OP_ROR       = 0b00
+EX_OP_SLA       = 0b01
+EX_OP_SRA       = 0b10
+EX_OP_SRL       = 0b11 # Right shift shifting in high bit (arithmatic shift)
+
+# Arith Ops (AO)
+EX_OP_ADD       = 0b00
+EX_OP_SUB       = 0b01
+EX_OP_MUL       = 0b10
+EX_OP_MAC       = 0b11
+
+# Crypto Ops (CO)
+EX_OP_GF2       = 0b00
+EX_OP_BITSLICE  = 0b01
+EX_OP_PERMUTE   = 0b10
+EX_OP_SBOX      = 0b11
+
+# LoadImm/
+EX_OP_MASK      = 0b00
+EX_OP_LOAD8     = 0b01
+EX_OP_XORC      = 0b10
+EX_OP_RESERVED  = 0b11
+
+# Size Tags
+EX_SIZE_8       = 0b00
+EX_SIZE_16      = 0b01
+EX_SIZE_32      = 0b10
+
+# Input/Output
+INSTR_PULL_MSG  = 0b0000
+INSTR_PULL_KEY  = 0b0001
+INSTR_PUSH_OUT  = 0b0010
+
+# Looping
+INSTR_LOOP_BEGIN = 0b
+INSTR_LOOP_END
+
+#
+HALT
 
 # Rotate/shift
 # Load immediate
@@ -54,7 +133,7 @@ def instr_r16(op, rw, r1, r0):
     # Ex Op  | r1     | r0     | rw
     return (op << 12) | (r1 << 8) | (r0 << 4) | (rw << 0)
 
-def decode(instr):
+def decode(instr, regfile):
     # Check if it's an R16-type instruction
     assert (instr & 0xF000) >> 12 != 0xF, "can only decode R-type instructions"
 
@@ -64,34 +143,74 @@ def decode(instr):
     r1 = (instr & 0x0F00) >> 8
     r0 = (instr & 0x00F0) >> 4
 
+    # Read from regfile if it's a non-load instruction
+    v0 = self.regfile[r0]
+    v1 = self.regfile[r1]
+
     # Write is always enabled for now
     write_en = 1
 
-    return op, rw, write_en, r1, r0
+    return op, rw, write_en, v1, v0
 
 def execute(op, v1, v0, acc):
     vw = np.zeros(shape=acc.shape, dtype=acc.dtype)
-    if op == EX_OP_XOR:
+    # Bitwise operations
+    if op == EX_OP_AND:
+        vw = np.bitwise_and(v1, v0)
+    elif op == EX_OP_OR:
+        vw = np.bitwise_or(v1, v0)
+    elif op == EX_OP_XOR:
         vw = v1 ^ v0
-    elif op == EX_OP_AND:
-        vw = v1 & v0
-    elif op == EX_OP_XNOR:
-        vw = ~(v1 ^ v0)
+    elif op == EX_OP_NOT:
+        vw = ~v1
+
+    # Shift Operations
     elif op == EX_OP_ROR:
         vw = (v1 >> v0) | (v1 << 8 - v0)
+    elif op == EX_OP_SLA:
+        vw = (v1 << v0)
+    elif op == EX_OP_SRA:
+        vw = (v1 >> v0)
+    elif op == EX_OP_SRL:
+        vw = (v1 >> v0) # TODO - make arithmatic
+
+    # Arithmatic
     elif op == EX_OP_ADD:
         vw = v1 + v0
     elif op == EX_OP_SUB:
         vw = v1 - v0
     elif op == EX_OP_MUL:
         vw = v1 * v0
+
+    # Crypto ops
     elif op == EX_OP_BITSLICE:
-        # Break out each
-        bits = np.unpackbits(np.array([0x1 for _ in range(8)]))
-        # TODO
+        # Seperate v1 into 4 groups of 8 bits
+        for i in range(4):
+            for j in range(8):
+                # We want to collect the kth bit of each element in v1[i*8 + j]
+                # Create a mask we can apply to each byte
+                mask = 0x01 << j
+                for k in range(8):
+                    vw[i*8 + j] |= ((v1[i*8 + k] & mask) >> i) << k
+
     elif op == EX_OP_PERMUTE:
-        # TODO
-        pass
+        # For each value in the shuffle mask check the top bits for "special
+        # values"
+        for i, v in enumerate(v0):
+            # If any of the top 3 bits are set, set the register to "special value"
+            vspecial = (v & 0xe) >> 5
+            if vspecial:
+                if vspecial == 0b111:
+                    v1[i] = 0xFF
+                elif vspecial == 0b100:
+                    v1[i] = 0x00
+                elif vspecial == 0b101:
+                    v1[i] = 0x01
+                elif vspecial == 0b110:
+                    v1[i] = i
+
+        # Shuffle the bytes based on the indexes in v0
+        vw[v0] = v1
     else:
         raise Exception("Illegal Instruction!")
 
@@ -193,11 +312,7 @@ class Interpreter(object):
         instr = self.program.code[self.pc]
 
         # Decode the instruction
-        op, rw, write_en, r1, r0 = decode(instr)
-
-        # Read the regfile
-        v0 = self.regfile[r0]
-        v1 = self.regfile[r1]
+        op, rw, write_en, v1, v0 = decode(instr, self.regfile)
 
         # Execute
         try:
