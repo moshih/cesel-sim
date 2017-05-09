@@ -251,6 +251,22 @@ class Interpreter(object):
 
 np.set_printoptions(threshold=np.nan)
 
+def shift_32bit():
+    # we are shifting R0 by 32 words (2 values) by the elements in R1. The assumption is 
+    #that that each pair of values in R1 are the same (eg 1,1,2,2,1,1,4,4,...)
+    #this uses R0,R1, and (R2,R3) as a temp buffer
+    
+    R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
+
+    # Program Definition
+    p = Program()
+    p.permute(R0,R1,R2)
+
+
+    # Interpreter
+    i = Interpreter(program=p, regfile={i: i for i in range(16)}) 
+    i.step()
+
 def main(args=None):
     # Simple proxies to make our code prettier
     # The "Program" class only need integers
@@ -267,7 +283,7 @@ def main(args=None):
     i = Interpreter(program=p, regfile={i: i for i in range(16)})
     
     for x in range(0,32):
-        i.regfile[1][x]=(x+1)%31;
+        i.regfile[1][x]=(x+1)%32;
         i.regfile[2][x]=x%4;
         
     print("intial states")
