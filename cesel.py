@@ -86,12 +86,37 @@ def execute(op, v1, v0, acc):
     elif op == EX_OP_MUL:
         vw = v1 * v0
     elif op == EX_OP_BITSLICE:
-        # Break out each
-        bits = np.unpackbits(np.array([0x1 for _ in range(8)]))
+        # Seperate v1 into 4 groups of 8 bits
+        for i in range(4):
+            for j in range(8):
+                # We want to collect the kth bit of each element in v1[i*8 + j]
+                # Create a mask we can apply to each byte
+                mask = 0x01 << j
+                for k in range(8):
+                    vw[i*8 + j] |= ((v1[i*8 + k] & mask) >> i) << k
         # TODO
     elif op == EX_OP_PERMUTE:
-        # TODO
-        pass
+        # For each value in the shuffle mask check the top bits for "special
+        # values"
+        for i, v in enumerate(v0):
+            # If any of the top 3 bits are set, set the register to "special value"
+            vspecial = (v & 0xe) >> 5
+            if vspecial:
+                if vspecial == 0b111:
+                    v1[i] = 0xFF
+                elif vspecial == 0b100:
+                    v1[i] = 0x00
+                elif vspecial == 0b101:
+                    v1[i] = 0x01
+                elif vspecial == 0b110:
+                    v1[i] = i
+
+        # Shuffle the bytes based on the indexes in v0
+        print(vw)
+        print(v0)
+        print(v1)
+        #vw[v0] = v1
+        vw[0][v0]=v1
     else:
         raise Exception("Illegal Instruction!")
 
@@ -224,6 +249,8 @@ class Interpreter(object):
     def __str__(self):
         return "Interpreter(state='{}', pc={})".format(self.state, self.pc)
 
+np.set_printoptions(threshold=np.nan)
+
 def main(args=None):
     # Simple proxies to make our code prettier
     # The "Program" class only need integers
@@ -231,14 +258,25 @@ def main(args=None):
 
     # Program Definition
     p = Program()
-    p.xor(R0, R0, R0)
-    p.add8(R0, R0, R0)
-    p.mul8(R1, R1, R0)
+    p.permute(R0,R1,R2)
+    #p.xor(R0, R0, R0)
+    #p.add8(R0, R0, R0)
+    #p.mul8(R1, R1, R0)
 
     # Interpreter
     i = Interpreter(program=p, regfile={i: i for i in range(16)})
+    
+    for x in range(0,32):
+        i.regfile[1][x]=(x+1)%31;
+        i.regfile[2][x]=x%4;
+        
+    print("intial states")
+    print(i.regfile[0])
+    print(i.regfile[1])
+    print(i.regfile[2])
     i.step()
-    i.step()
+    print(i.regfile[0])
+    #i.step()
 
 if __name__ == '__main__':
     main()
