@@ -515,7 +515,7 @@ def sigma_one():
     i.step()
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    sigmazero_one=i.regfile[0][0:4]
+    sigmaone_one=i.regfile[0][0:4]
     
     
     i.regfile[15]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
@@ -531,7 +531,7 @@ def sigma_one():
     i.step()
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    sigmazero_two=i.regfile[0][4:8]
+    sigmaone_two=i.regfile[0][4:8]
     
     
     
@@ -553,7 +553,7 @@ def sigma_one():
     i.step()
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    sigmazero_three=i.regfile[0][8:12]
+    sigmaone_three=i.regfile[0][8:12]
     
     
     
