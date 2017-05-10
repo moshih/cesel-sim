@@ -112,11 +112,14 @@ def execute(op, v1, v0, acc):
                     v1[i] = i
 
         # Shuffle the bytes based on the indexes in v0
-        print(vw)
-        print(v0)
-        print(v1)
+        #print(vw)
+        #print(v0)
+        #print(v1)
         #vw[v0] = v1
-        vw[0][v0]=v1
+        vw[0]=v1[v0]
+        #for x in range(0,32):
+        #    vw[0][x]=v1[v0[x]]
+        #print(vw)
     else:
         raise Exception("Illegal Instruction!")
 
@@ -251,21 +254,7 @@ class Interpreter(object):
 
 np.set_printoptions(threshold=np.nan)
 
-def shift_32bit():
-    # we are shifting R0 by 32 words (2 values) by the elements in R1. The assumption is 
-    #that that each pair of values in R1 are the same (eg 1,1,2,2,1,1,4,4,...)
-    #this uses R0,R1, and (R2,R3) as a temp buffer
-    
-    R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
 
-    # Program Definition
-    p = Program()
-    p.permute(R0,R1,R2)
-
-
-    # Interpreter
-    i = Interpreter(program=p, regfile={i: i for i in range(16)}) 
-    i.step()
 
 def main(args=None):
     # Simple proxies to make our code prettier
@@ -283,7 +272,7 @@ def main(args=None):
     i = Interpreter(program=p, regfile={i: i for i in range(16)})
     
     for x in range(0,32):
-        i.regfile[1][x]=(x+1)%32;
+        i.regfile[1][x]=(x+2)%32;
         i.regfile[2][x]=x%4;
         
     print("intial states")
@@ -293,6 +282,234 @@ def main(args=None):
     i.step()
     print(i.regfile[0])
     #i.step()
+    
+#make l can be is 2**64-1
+def deriv_k(l):
+    return ((448+512)-(l+1))%512;
+
+def total_bits(l):
+    return l-l%512+512;
+def total_array_len(l):
+    return int((l-l%512+512)/8);
+
+def preprocessing(message_array, length):
+    length = int(length);
+    M=np.zeros(total_array_len(length), dtype=np.uint8);  
+    for i in range(int(0), int((length+7)/8)):
+        M[i]=message_array[i];
+    M[int(length/8)]=M[int(length/8)]+2**(7-length%8);
+    
+    for i in range(0,8):
+        M[M.size-1-i]=(length&(255<<(8*i)))>>(8*i);
+    return M
+
+H_00=0x6a09e667
+H_10=0xbb67ae85
+H_20=0x3c6ef372
+H_30=0xa54ff53a
+H_40=0x510e527f
+H_50=0x9b05688c
+H_60=0x1f83d9ab
+H_70=0x5be0cd19
+
+#one block is  512 bits, or 64 8 bit blocks or two lanes.
+#one_block is assumed to be 64 uint8 array.
+#each word is 32 bits, which occupies 4 values
+def sha_256_one_block(one_block):
+    W=np.zeros(total_array_len(128), dtype=np.uint8);  
+    
+    #loading in the first 16 words =16*4=64
+    for x in range(0,64):
+        W[x]=one_block[x]
+    
+    
+    R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
+    p = Program()
+    
+    i = Interpreter(program=p, regfile={i: i for i in range(16)})
+
+#sigma_zero operation on R0
+#operating on 32 bit works (4 values)
+def sigma_zero():
+    #use R0,R1,R2
+    R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
+
+    # Program Definition
+    p = Program()
+    
+    
+    ##############################################################################
+    #rotate by 28 to get the first part of sigmazero
+    
+    
+    #set set R15 as the permutation block (3,0,1,2)
+    p.permute(R1,R15,R0)
+    #set R15  as 4 for all values
+    p.ror(R0,R15,R0)
+    p.ror(R1,R15,R1)
+    #set R15 as 55 =0b00001111
+    p.and_(R0,R0,R15)
+    #set R15 as 240 =0b11110000
+    p.and_(R1,R1,R15)
+    p.add8(R0,R1,R0)
+    #offload first 4 values of R0 as sigmazero_one
+
+    ##############################################################################
+    #rotate by 6 to get the second part of sigmazero (rotate by 34 in total)
+    
+    #set set R15 as the permutation block (3,0,1,2)
+    p.permute(R1,R15,R0)
+    #set set R15 as 2
+    p.ror(R0,R15,R0)
+    p.ror(R1,R15,R1)
+    #set set R15 as 0b00111111
+    p.and_(R0,R0,R15)
+    #set set R15 as 0b11000000
+    p.and_(R1,R1,R15)
+    p.add8(R0,R1,R0)
+    
+    
+    ##############################################################################
+    #rotate by 5 to get the second part of sigmazero (rotate by 39 in total)
+    
+    #set set R15 as the permutation block (3,0,1,2)
+    p.permute(R1,R15,R0)
+    #set set R15 as 3
+    p.ror(R0,R15,R0)
+    p.ror(R1,R15,R1)
+    #set set R15 as 0b00011111
+    p.and_(R0,R0,R15)
+    #set set R15 as 0b11100000
+    p.and_(R1,R1,R15)
+    p.add8(R0,R1,R0)
+    
+     ########-------------------------------------------------------------------------------
+    # Interpreter
+    i = Interpreter(program=p, regfile={i: i for i in range(16)})
+    for x in range(0,32):
+        i.regfile[0][x]=(x+0b10101010);
+    
+    ##############################################################################
+    #rotate by 28 to get the first part of sigmazero
+    i.regfile[15]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
+    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:8]])
+    i.step()
+
+
+    i.regfile[15]=[4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4]
+
+    i.step()
+    i.step()
+    
+
+    
+    i.regfile[15]=[0b00001111 for x in range(0,32)]
+    i.step()
+    i.regfile[15]=[0b11110000 for x in range(0,32)]
+    i.step()
+    i.step()
+    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:8]])
+    sigmazero_one=i.regfile[0][0:4]
+    
+     ##############################################################################
+    #rotate by 6 to get the second part of sigmazero (rotate by 34 in total)
+    i.regfile[15]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
+    i.step()
+    i.regfile[15]=[0b00000010 for x in range(0,32)]
+    i.step()
+    i.step()
+    i.regfile[15]=[0b00111111 for x in range(0,32)]
+    i.step()
+    i.regfile[15]=[0b11000000 for x in range(0,32)]
+    i.step()
+    i.step()
+    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:8]])
+    sigmazero_two=i.regfile[0][4:8]
+    
+    
+     ##############################################################################
+    #rotate by 5 to get the second part of sigmazero (rotate by 39 in total)
+    i.regfile[15]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
+    i.step()
+    i.regfile[15]=[0b00000011 for x in range(0,32)]
+    i.step()
+    i.step()
+    i.regfile[15]=[0b00011111 for x in range(0,32)]
+    i.step()
+    i.regfile[15]=[0b11100000 for x in range(0,32)]
+    i.step()
+    i.step()
+    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:8]])
+    sigmazero_three=i.regfile[0][8:12]
+    
+    
+def sigma_zero1():
+    R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
+
+    # Program Definition
+    p = Program()
+    
+    #set set R1 as the permutation block (3,0,1,2)
+    p.permute(R0,R1,R0)
+    #set R2  as 4 for all values
+    p.ror(R1,R0,R2)
+    #p.ror(R0,R0,R2)
+
+    #set R2 as 55 =0b00001111
+    #set R3 as 240 =0b11110000
+    p.and_(R1,R0,R3)
+    p.and_(R0,R0,R2)
+
+
+    # Interpreter
+    i = Interpreter(program=p, regfile={i: i for i in range(16)})
+    for x in range(0,32):
+        i.regfile[0][x]=(x+1)%32;
+    
+    i.regfile[1]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
+    #print(i.regfile[0][0:8])   
+    #print(i.regfile[1][0:8])
+    i.step()
+    #print(i.regfile[0][0:8])
+    #print(i.regfile[1][0:8])
+    
+    #print ([np.binary_repr(n, width=8) for n in i.regfile[0]])
+    #print(i.regfile[0][0:8])
+    #print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:8]])
+    i.regfile[2]=[4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4]
+    i.step()
+    #i.step()
+    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:8]])
+    #print ([np.binary_repr(n, width=8) for n in i.regfile[1][0:8]])
+    i.regfile[2]=[55 for x in range(0,32)]
+    i.regfile[3]=[240 for x in range(0,32)]
+    
+    i.step()
+    i.step()
+    
+    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:8]])
+    print ([np.binary_repr(n, width=8) for n in i.regfile[1][0:8]])
+    
+    #print(i.regfile[0])
+    #print ([np.binary_repr(n, width=8) for n in i.regfile[0]])
+    #print(i.regfile[1])
+    #print(i.regfile[2])
+    
+    
+def test1():
+    one_block=np.zeros(total_array_len(64), dtype=np.uint8); 
+
+def test1():
+    message=np.zeros(total_array_len(16), dtype=np.uint8)  
+    message[0]=255
+    message[1]=253
+    post=preprocessing(message,16);
+    print(post)
+    print(post[0:31])
+    print(len(post)*8)
+    
 
 if __name__ == '__main__':
-    main()
+    #main()
+    #test()
+    sigma_zero()
