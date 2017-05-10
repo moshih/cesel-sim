@@ -342,22 +342,6 @@ def sigma_zero():
     #rotate by 28 to get the first part of sigmazero
     
     
-    #set set R15 as the permutation block (3,0,1,2)
-    p.permute(R1,R15,R0)
-    #set R15  as 4 for all values
-    p.ror(R0,R15,R0)
-    p.ror(R1,R15,R1)
-    #set R15 as 55 =0b11110000
-    p.and_(R0,R0,R15)
-    #set R15 as 240 = 0b00001111
-    p.and_(R1,R1,R15)
-    p.add8(R0,R1,R0)
-    #offload first 4 values of R0 as sigmazero_one
-
-    ##############################################################################
-    #rotate by 6 to get the second part of sigmazero (rotate by 34 in total)
-    
-    #set set R15 as the permutation block (3,0,1,2)
     p.permute(R1,R15,R0)
     #set set R15 as 2
     p.ror(R0,R15,R0)
@@ -367,90 +351,98 @@ def sigma_zero():
     #set set R15 as 0b11000000
     p.and_(R1,R1,R15)
     p.add8(R0,R1,R0)
-    
-    
-    ##############################################################################
-    #rotate by 5 to get the second part of sigmazero (rotate by 39 in total)
-    
-    #set set R15 as the permutation block (3,0,1,2)
+
+
     p.permute(R1,R15,R0)
-    #set set R15 as 3
+    #set set R15 as 2
+    p.permute(R0,R15,R0)
+    #set set R15 as 2
     p.ror(R0,R15,R0)
     p.ror(R1,R15,R1)
-    #set set R15 as 0b00011111
+    #set set R15 as 0b00111111
     p.and_(R0,R0,R15)
-    #set set R15 as 0b11100000
+    #set set R15 as 0b11000000
     p.and_(R1,R1,R15)
     p.add8(R0,R1,R0)
+    
+    p.permute(R1,R15,R0)
+    #set set R15 as 2
+    p.permute(R0,R15,R0)
+    #set set R15 as 2
+    p.ror(R0,R15,R0)
+    p.ror(R1,R15,R1)
+    #set set R15 as 0b00111111
+    p.and_(R0,R0,R15)
+    #set set R15 as 0b11000000
+    p.and_(R1,R1,R15)
+    p.add8(R0,R1,R0)
+
+
     
      ########-------------------------------------------------------------------------------
     # Interpreter
     i = Interpreter(program=p, regfile={i: i for i in range(16)})
     for x in range(0,32):
         i.regfile[0][x]=(x+0b10101010);
-    
+    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
     ##############################################################################
     #rotate by 28 to get the first part of sigmazero
-    i.regfile[15]=[1,2,3,0, 5,6,7,4, 9,10,11,8, 13,14,15,12, 17,18,19,16, 21,22,23,20,  25,26,27,24, 29,30,31,28]
-    #[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
-    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    i.step()
-    #print ([np.binary_repr(n, width=8) for n in i.regfile[1][0:4]])
-
-    i.regfile[15]=[4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4]
-
-    i.step()
-    i.step()
-    
-
-    
-    i.regfile[15]=[0b11110000 for x in range(0,32)]
-    i.step()
-    i.regfile[15]=[ 0b00001111  for x in range(0,32)]
-    i.step()
-    
-    #print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    #print ([np.binary_repr(n, width=8) for n in i.regfile[1][0:4]])
-    i.step()
-    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    sigmazero_one=i.regfile[0][0:4]
-    
-     ##############################################################################
-    #rotate by 6 to get the second part of sigmazero (rotate by 34 in total)
     i.regfile[15]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
     i.step()
-    i.regfile[15]=[0b00000110 for x in range(0,32)]
+    i.regfile[15]=[0b00000010 for x in range(0,32)]
     i.step()
     i.step()
     #i.regfile[15]=[0b00111111 for x in range(0,32)]
-    i.regfile[15]=[0b00000011 for x in range(0,32)]
+    i.regfile[15]=[0b00111111 for x in range(0,32)]
     i.step()
     #i.regfile[15]=[0b11000000 for x in range(0,32)]
-    i.regfile[15]=[0b11111100 for x in range(0,32)]
+    i.regfile[15]=[0b11000000 for x in range(0,32)]
+    i.step()
+    i.step()
+    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
+    sigmazero_one=i.regfile[0][0:4]
+
+
+    ##############################################################################
+    #4,5,6,7, 8,9,10,11, 12,13,14,15, 16,17,18,19, 20,21,22,23, ,24,25,26,27, 28,29,30,31
+    #rotate by 28 to get the first part of sigmazero
+    i.regfile[15]=[2,3,0,1, 6,7,4,5  ,10,11,8,9 ,14,15,12,13 ,18,19,16,17 ,22,23,20,21 ,26,27,24,25 ,30,31,28,29]
+    i.step()
+    i.regfile[15]=[3,0,1,2,  7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
+    i.step()
+    i.regfile[15]=[0b00000011 for x in range(0,32)]
+    i.step()
+    i.step()
+    #i.regfile[15]=[0b00111111 for x in range(0,32)]
+    i.regfile[15]=[0b00011111 for x in range(0,32)]
+    i.step()
+    #i.regfile[15]=[0b11000000 for x in range(0,32)]
+    i.regfile[15]=[0b11100000 for x in range(0,32)]
     i.step()
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
     sigmazero_two=i.regfile[0][4:8]
     
-
-     ##############################################################################
-    #rotate by 5 to get the second part of sigmazero (rotate by 39 in total)
-    i.regfile[15]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
+        ##############################################################################
+    #4,5,6,7, 8,9,10,11, 12,13,14,15, 16,17,18,19, 20,21,22,23, ,24,25,26,27, 28,29,30,31
+    #rotate by 28 to get the first part of sigmazero
+    i.regfile[15]=[2,3,0,1, 6,7,4,5  ,10,11,8,9 ,14,15,12,13 ,18,19,16,17 ,22,23,20,21 ,26,27,24,25 ,30,31,28,29]
     i.step()
-    i.regfile[15]=[0b00000101 for x in range(0,32)]
+    i.regfile[15]=[3,0,1,2,  7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
+    i.step()
+    i.regfile[15]=[0b00000001 for x in range(0,32)]
     i.step()
     i.step()
-    i.regfile[15]=[0b00000111 for x in range(0,32)]
-
-    
+    #i.regfile[15]=[0b00111111 for x in range(0,32)]
+    i.regfile[15]=[0b01111111 for x in range(0,32)]
     i.step()
-    i.regfile[15]=[0b11111000      for x in range(0,32)]
+    #i.regfile[15]=[0b11000000 for x in range(0,32)]
+    i.regfile[15]=[0b10000000 for x in range(0,32)]
     i.step()
-
-    
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
     sigmazero_three=i.regfile[0][8:12]
+
     
     #------------------------------------------------------------
     
@@ -576,4 +568,4 @@ if __name__ == '__main__':
     #main()
     #test()
     sigma_zero()
-    sigma_one()
+    #sigma_one()
