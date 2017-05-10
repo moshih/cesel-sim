@@ -328,9 +328,9 @@ def sha_256_one_block(one_block):
     
     i = Interpreter(program=p, regfile={i: i for i in range(16)})
 
-#sigma_zero operation on R0
+#sumation_zero operation on R0
 #operating on 32 bit works (4 values)
-def sigma_zero():
+def sumation_zero():
     #use R0,R1,R2
     R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
 
@@ -339,7 +339,7 @@ def sigma_zero():
     
     
     ##############################################################################
-    #rotate by 28 to get the first part of sigmazero
+    #rotate by 28 to get the first part of sumationzero
     
     
     p.permute(R1,R15,R0)
@@ -386,7 +386,7 @@ def sigma_zero():
         i.regfile[0][x]=(x+0b10101010);
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
     ##############################################################################
-    #rotate by 28 to get the first part of sigmazero
+    #rotate by 28 to get the first part of sumationzero
     i.regfile[15]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
     i.step()
     i.regfile[15]=[0b00000010 for x in range(0,32)]
@@ -400,12 +400,12 @@ def sigma_zero():
     i.step()
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    sigmazero_one=i.regfile[0][0:4]
+    sumationzero_one=i.regfile[0][0:4]
 
 
     ##############################################################################
     #4,5,6,7, 8,9,10,11, 12,13,14,15, 16,17,18,19, 20,21,22,23, ,24,25,26,27, 28,29,30,31
-    #rotate by 28 to get the first part of sigmazero
+    #rotate by 28 to get the first part of sumationzero
     i.regfile[15]=[2,3,0,1, 6,7,4,5  ,10,11,8,9 ,14,15,12,13 ,18,19,16,17 ,22,23,20,21 ,26,27,24,25 ,30,31,28,29]
     i.step()
     i.regfile[15]=[3,0,1,2,  7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
@@ -421,11 +421,11 @@ def sigma_zero():
     i.step()
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    sigmazero_two=i.regfile[0][4:8]
+    sumationzero_two=i.regfile[0][4:8]
     
         ##############################################################################
     #4,5,6,7, 8,9,10,11, 12,13,14,15, 16,17,18,19, 20,21,22,23, ,24,25,26,27, 28,29,30,31
-    #rotate by 28 to get the first part of sigmazero
+    #rotate by 28 to get the first part of sumationzero
     i.regfile[15]=[2,3,0,1, 6,7,4,5  ,10,11,8,9 ,14,15,12,13 ,18,19,16,17 ,22,23,20,21 ,26,27,24,25 ,30,31,28,29]
     i.step()
     i.regfile[15]=[3,0,1,2,  7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
@@ -441,15 +441,15 @@ def sigma_zero():
     i.step()
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    sigmazero_three=i.regfile[0][8:12]
+    sumationzero_three=i.regfile[0][8:12]
 
     
     #------------------------------------------------------------
     
     
-    #sigma_zero operation on R0
+    #sumation_zero operation on R0
 #operating on 32 bit works (4 values)
-def sigma_one():
+def sumation_one():
     #use R0,R1,R2
     R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
 
@@ -458,7 +458,7 @@ def sigma_one():
     
     
     ##############################################################################
-    #rotate by 28 to get the first part of sigmazero
+    #rotate by 28 to get the first part of sumationzero
     
     
     p.permute(R1,R15,R0)
@@ -501,7 +501,7 @@ def sigma_one():
         i.regfile[0][x]=(x+0b10101010);
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
     ##############################################################################
-    #rotate by 28 to get the first part of sigmazero
+    #rotate by 28 to get the first part of sumationzero
     i.regfile[15]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
     i.step()
     i.regfile[15]=[0b00000110 for x in range(0,32)]
@@ -515,7 +515,7 @@ def sigma_one():
     i.step()
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    sigmaone_one=i.regfile[0][0:4]
+    sumationone_one=i.regfile[0][0:4]
     
     
     i.regfile[15]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
@@ -531,13 +531,13 @@ def sigma_one():
     i.step()
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    sigmaone_two=i.regfile[0][4:8]
+    sumationone_two=i.regfile[0][4:8]
     
     
     
     ##############################################################################
     #4,5,6,7, 8,9,10,11, 12,13,14,15, 16,17,18,19, 20,21,22,23, ,24,25,26,27, 28,29,30,31
-    #rotate by 28 to get the first part of sigmazero
+    #rotate by 28 to get the first part of sumationzero
     i.regfile[15]=[2,3,0,1, 6,7,4,5  ,10,11,8,9 ,14,15,12,13 ,18,19,16,17 ,22,23,20,21 ,26,27,24,25 ,30,31,28,29]
     i.step()
     i.regfile[15]=[3,0,1,2,  7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
@@ -553,61 +553,11 @@ def sigma_one():
     i.step()
     i.step()
     print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:4]])
-    sigmaone_three=i.regfile[0][8:12]
+    sumationone_three=i.regfile[0][8:12]
     
     
     
-def sigma_zero1():
-    R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
 
-    # Program Definition
-    p = Program()
-    
-    #set set R1 as the permutation block (3,0,1,2)
-    p.permute(R0,R1,R0)
-    #set R2  as 4 for all values
-    p.ror(R1,R0,R2)
-    #p.ror(R0,R0,R2)
-
-    #set R2 as 55 =0b00001111
-    #set R3 as 240 =0b11110000
-    p.and_(R1,R0,R3)
-    p.and_(R0,R0,R2)
-
-
-    # Interpreter
-    i = Interpreter(program=p, regfile={i: i for i in range(16)})
-    for x in range(0,32):
-        i.regfile[0][x]=(x+1)%32;
-    
-    i.regfile[1]=[3,0,1,2, 7,4,5,6, 11,8,9,10, 15,12,13,14, 19,16,17,18, 23,20,21,22, 27,24,25,26, 31,28,29,30]
-    #print(i.regfile[0][0:8])   
-    #print(i.regfile[1][0:8])
-    i.step()
-    #print(i.regfile[0][0:8])
-    #print(i.regfile[1][0:8])
-    
-    #print ([np.binary_repr(n, width=8) for n in i.regfile[0]])
-    #print(i.regfile[0][0:8])
-    #print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:8]])
-    i.regfile[2]=[4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4]
-    i.step()
-    #i.step()
-    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:8]])
-    #print ([np.binary_repr(n, width=8) for n in i.regfile[1][0:8]])
-    i.regfile[2]=[55 for x in range(0,32)]
-    i.regfile[3]=[240 for x in range(0,32)]
-    
-    i.step()
-    i.step()
-    
-    print ([np.binary_repr(n, width=8) for n in i.regfile[0][0:8]])
-    print ([np.binary_repr(n, width=8) for n in i.regfile[1][0:8]])
-    
-    #print(i.regfile[0])
-    #print ([np.binary_repr(n, width=8) for n in i.regfile[0]])
-    #print(i.regfile[1])
-    #print(i.regfile[2])
     
     
 def test1():
@@ -626,5 +576,5 @@ def test1():
 if __name__ == '__main__':
     #main()
     #test()
-    #sigma_zero()
-    sigma_one()
+    #sumation_zero()
+    sumation_one()
