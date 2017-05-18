@@ -292,7 +292,7 @@ def add (a,b):
     d=tovalue(b)
     for x in range(0,8):
         c[x]=c[x]+d[x]
-    return tobin1(c)
+    return tobin(c)
 
 def sha_256_one_block():
     #one_block=np.zeros(total_array_len(64), dtype=np.uint8); 
@@ -323,16 +323,16 @@ def sha_256_one_block():
     #R0 and R1 have the original data
     #R2 is the sigma1 of the next 2
     p.permute(R2,R0,R2)
-    p.add8(R2,R2,R3)
+    ##p.add8(R2,R2,R3)
     p.permute(R3,R1,R3)
-    p.add8(R2,R2,R3)
+    ##p.add8(R2,R2,R3)
     #now create and add sigma0
     #R0 and R1 have the original data
     #R2 is the sigma1 +2 things 
     
     asm_func.sigma_zero_asm_part1(p, R3,R4,R5,R6,R7)
     
-    p.add8(R2,R2,R4)
+    ##p.add8(R2,R2,R4)
     
     #now create and add sigma0
     #R0 and R1 have the original data
@@ -355,14 +355,23 @@ def sha_256_one_block():
     i.regfile[2]=get_index(0,0)+get_index(0,1)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0  ]
     #print(i.regfile[2])
     i.step()
+    #print(tovalue(i.regfile[2]))
+    #print(tovalue(i.regfile[3]))
+    i.regfile[2]=add(i.regfile[2],i.regfile[3])
+    #print(tovalue(add(i.regfile[2],i.regfile[3])))
+    #print(tovalue(i.regfile[2]))
     
-    i.step()
-    i.regfile[2]=add(i.regfile[2], i.regfile[3])
+    ##i.step()
+    #i.regfile[2]=add(i.regfile[2], i.regfile[3])
     #print ([np.binary_repr(n, width=8) for n in i.regfile[R2][0:8]])
     i.regfile[3]=get_index(1,1)+get_index(1,2)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0  ]
     i.step()
-    i.regfile[2]=add(i.regfile[2], i.regfile[3])
-    i.step()
+    
+    
+    #i.regfile[2]=add(i.regfile[2], i.regfile[3])
+    ##i.step()
+    i.regfile[2]=add(i.regfile[2],i.regfile[3])
+    #print(tovalue(i.regfile[2]))
     #print ([np.binary_repr(n, width=8) for n in i.regfile[R2][0:8]])
     
     i.regfile[3]=get_index(0,1)+get_index(0,2)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0  ]
@@ -374,8 +383,9 @@ def sha_256_one_block():
     asm_func.sigma_zero_asm_part2(i, R3,R4,R5,R6,R7)
     
     #print ([np.binary_repr(n, width=8) for n in i.regfile[R4][0:8]])
-    i.step()
-    i.regfile[2]=add(i.regfile[2], i.regfile[4])
+   ## i.step()
+    i.regfile[2]=add(i.regfile[2],i.regfile[4])
+    #i.regfile[2]=add(i.regfile[2], i.regfile[4])
     print(tovalue(i.regfile[2]))
     
     #print ([np.binary_repr(n, width=8) for n in i.regfile[R2][0:8]])
