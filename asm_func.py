@@ -8,7 +8,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-
+from shaloop import loop1
 def get_index(row,index):
     if row==0 or row==1:
         return [4*index+3,4*index+2,4*index+1,4*index]
@@ -49,8 +49,8 @@ def sigma_one_asm_part1(p,data,result,calca,calcb,constant):
     p.xor(result,result,calcb)
     
 def sigma_one_asm_part2(i,data,result,calca,calcb,constant):
-    i.regfile[result]=[ 27,26,25,24,  31,30,29,28, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,  0,0,0,0, 0,0,0,0]
-    i.step()
+    #i.regfile[result]=[ 27,26,25,24,  31,30,29,28, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,  0,0,0,0, 0,0,0,0]
+    #i.step()
     
     #print("the data is")
     #print ([np.binary_repr(n, width=8) for n in i.regfile[2][0:8]])
