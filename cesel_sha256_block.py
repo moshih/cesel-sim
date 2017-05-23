@@ -342,35 +342,7 @@ def sha_256_one_block():
     #first load into the first 2 registers, the message block
     
     #put in the 14th and 15th word into the register of 2
-    p.permute(R2,R1,R3)
-    #now we apply sigma_one
-    #R2 is the data
-    #R4 is used for calcuations
-    #R5 is used for calcuations
-    #R3 loads the result
-    #R6 is used for calculation
-    data=R2
-    calca=R4
-    calcb=R5
-    calc=R6
-    result=R3
-    
-    #p.permute(R4,R2,R6)
-    sigma_one_asm_part1(p,R2,R3,R4,R5,R6)
-    
-    
-    
-    #R0 and R1 have the original data
-    #R2 is the sigma1 of the next 2
-    p.permute(R2,R0,R2)
-    ##p.add8(R2,R2,R3)
-    p.permute(R3,R1,R3)
-    ##p.add8(R2,R2,R3)
-    #now create and add sigma0
-    #R0 and R1 have the original data
-    #R2 is the sigma1 +2 things 
-    
-    asm_func.sigma_zero_asm_part1(p, R3,R4,R5,R6,R7)
+    loop_one.loop1_batch_part1(p,R2,R3,R4,R5,R6,R7,winput[0],winput[1])
     
     ##p.add8(R2,R2,R4)
     #now create and add sigma0
@@ -453,8 +425,7 @@ def sha_256_one_block():
     for x in range(0,32):
         i.regfile[0][x]=x
         i.regfile[1][x]=x+32
-    i.regfile[R3]=[ 27,26,25,24,  31,30,29,28, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,  0,0,0,0, 0,0,0,0]
-    i.step()
+    
     
     check=0;
     print("W 1st row")
@@ -462,36 +433,7 @@ def sha_256_one_block():
     print("W 2bd row")
     print(tovalue(i.regfile[1]))
     
-    sigma_one_asm_part2(i,R2,R3,R4,R5,R6)
-    #print("sigma 1")
-    #print(tovalue(i.regfile[3]))
-    
-    
-    i.regfile[2]=get_index(0,0)+get_index(0,1)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0  ]
-    i.step()
-    #print("constant")
-    #print(tovalue(i.regfile[2]))
-    i.regfile[2]=add(i.regfile[2],i.regfile[3])
-    
-    ##i.step()
-    i.regfile[3]=get_index(1,1)+get_index(1,2)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0  ]
-    i.step()
-    
-    #print("constant")
-    #print(tovalue(i.regfile[3]))
-    ##i.step()
-    i.regfile[2]=add(i.regfile[2],i.regfile[3])
-    
-    i.regfile[3]=get_index(0,1)+get_index(0,2)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0  ]
-    asm_func.sigma_zero_asm_part2(i, R3,R4,R5,R6,R7)
-    #print("sigma 0")
-    #print(tovalue(i.regfile[4]))
-
-   ## i.step()
-    i.regfile[2]=add(i.regfile[2],i.regfile[4])
-    #print("0th bath of size 2")
-    #print(tovalue(i.regfile[2]))
-    
+    loop_one.loop1_batch_part2(i,R2,R3,R4,R5,R6,R7,winput[0],winput[1])
     
     ####################################
     #i.regfile[2][8:16]=[0,0,0,1 ,01111101, 00110000, 00011011, 01101001]#[11110001, 00011001, 11110111, 00110001,01101001 ,00011011 ,00110000,01111101]
