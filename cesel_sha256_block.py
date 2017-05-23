@@ -294,6 +294,45 @@ def add (a,b):
         c[x]=c[x]+d[x]
     return tobin(c)
 import loop_one
+
+
+from winput import winput
+def transfer_two_words_part1(p,rega,offseta,regb,offsetb,calca,calcb):
+    p.permute(calca,rega,calca)
+    p.and_(calcb,calca,calcb)
+    
+    p.and_(regb,calca,regb)
+    p.add8(regb,regb,calcb )
+    
+def transfer_two_words_part2(i,rega,offseta,regb,offsetb,calca,calcb):
+    
+    i.regfile[calca]=[0 for x in range(0,32)]
+    i.regfile[calca][offsetb:offsetb+8]=[x for x in range(offseta,offseta+8)]
+    i.step()
+    
+    #print("step 1")
+    #print(tovalue(i.regfile[calca]))
+    
+    
+    i.regfile[calcb]=[0 for x in range(0,32)]
+    i.regfile[calcb][offsetb:offsetb+8]=[255 for x in range(offsetb,offsetb+8)]
+    i.step()
+    
+    #print("step 2")
+    #print(tovalue(i.regfile[calcb]))
+    
+    i.regfile[calca]=[255 for x in range(0,32)]
+    i.regfile[calca][offsetb:32]=[0 for x in range(offsetb, 32)]
+    i.step()
+    
+    #print("step 3")
+    #print(tovalue(i.regfile[regb]))
+    i.step()
+    
+    #print("step 4")
+    #print(tovalue(i.regfile[regb]))
+    #print(" ")
+    
 def sha_256_one_block():
     #one_block=np.zeros(total_array_len(64), dtype=np.uint8); 
     R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
@@ -338,7 +377,74 @@ def sha_256_one_block():
     #R0 and R1 have the original data
     #R2 contains W17 and W18
     ########################################################
-    loop_one.loop1_batch_part1(p)
+    loop_one.loop1_batch_part1(p,R3,R4,R5,R6,R7,R8,winput[2],winput[3])
+    transfer_two_words_part1(p,R3,0,R2,8,R4,R5)
+    
+    loop_one.loop1_batch_part1(p,R3,R4,R5,R6,R7,R8,winput[4],winput[5])
+    transfer_two_words_part1(p,R3,0,R2,16,R4,R5)
+    
+    loop_one.loop1_batch_part1(p,R3,R4,R5,R6,R7,R8,winput[6],winput[7])
+    transfer_two_words_part1(p,R3,0,R2,24,R4,R5)
+    
+    ###########################
+    loop_one.loop1_batch_part1(p,R4,R5,R6,R7,R8,R9,winput[8],winput[9])
+    transfer_two_words_part1(p,R4,0,R3,0,R5,R6)
+    
+    loop_one.loop1_batch_part1(p,R4,R5,R6,R7,R8,R9,winput[10],winput[11])
+    transfer_two_words_part1(p,R4,0,R3,8,R5,R6)
+    
+    loop_one.loop1_batch_part1(p,R4,R5,R6,R7,R8,R9,winput[12],winput[13])
+    transfer_two_words_part1(p,R4,0,R3,16,R5,R6)
+    
+    loop_one.loop1_batch_part1(p,R4,R5,R6,R7,R8,R9,winput[14],winput[15])
+    transfer_two_words_part1(p,R4,0,R3,24,R5,R6)
+    
+    
+     ###########################
+    loop_one.loop1_batch_part1(p,R5,R6,R7,R8,R9,R10,winput[16],winput[17])
+    transfer_two_words_part1(p,R5,0,R4,0,R6,R7)
+    loop_one.loop1_batch_part1(p,R5,R6,R7,R8,R9,R10,winput[18],winput[19])
+    transfer_two_words_part1(p,R5,0,R4,8,R6,R7)
+    loop_one.loop1_batch_part1(p,R5,R6,R7,R8,R9,R10,winput[20],winput[21])
+    transfer_two_words_part1(p,R5,0,R4,16,R6,R7)
+    loop_one.loop1_batch_part1(p,R5,R6,R7,R8,R9,R10,winput[22],winput[23])
+    transfer_two_words_part1(p,R5,0,R4,24,R6,R7)
+
+     ###########################
+    loop_one.loop1_batch_part1(p,R6,R7,R8,R9,R10,R11,winput[24],winput[25])
+    transfer_two_words_part1(p,R6,0,R5,0,R7,R8)
+    loop_one.loop1_batch_part1(p,R6,R7,R8,R9,R10,R11,winput[26],winput[27])
+    transfer_two_words_part1(p,R6,0,R5,8,R7,R8)
+    loop_one.loop1_batch_part1(p,R6,R7,R8,R9,R10,R11,winput[28],winput[29])
+    transfer_two_words_part1(p,R6,0,R5,16,R7,R8)
+    loop_one.loop1_batch_part1(p,R6,R7,R8,R9,R10,R11,winput[30],winput[31])
+    transfer_two_words_part1(p,R6,0,R5,24,R7,R8)
+    
+    ###############################--------
+ 
+    
+
+    loop_one.loop1_batch_part1(p,R7,R8,R9,R10,R11,R12,winput[32],winput[33])
+    transfer_two_words_part1(p,R7,0,R6,0,R8,R9)                              
+    loop_one.loop1_batch_part1(p,R7,R8,R9,R10,R11,R12,winput[34],winput[35]) 
+    transfer_two_words_part1(p,R7,0,R6,8,R8,R9)                              
+    loop_one.loop1_batch_part1(p,R7,R8,R9,R10,R11,R12,winput[36],winput[37]) 
+    transfer_two_words_part1(p,R7,0,R6,16,R8,R9)                             
+    loop_one.loop1_batch_part1(p,R7,R8,R9,R10,R11,R12,winput[38],winput[39]) 
+    transfer_two_words_part1(p,R7,0,R6,24,R8,R9)
+
+
+    loop_one.loop1_batch_part1(p,R8,R9,R10,R11,R12,R13,winput[40],winput[41])
+    transfer_two_words_part1(p,R8,0,R7,0,R9,R10)                             
+    loop_one.loop1_batch_part1(p,R8,R9,R10,R11,R12,R13,winput[42],winput[43])
+    transfer_two_words_part1(p,R8,0,R7,8,R9,R10)                             
+    loop_one.loop1_batch_part1(p,R8,R9,R10,R11,R12,R13,winput[44],winput[45])
+    transfer_two_words_part1(p,R8,0,R7,16,R9,R10)                            
+    loop_one.loop1_batch_part1(p,R8,R9,R10,R11,R12,R13,winput[46],winput[47])
+    transfer_two_words_part1(p,R8,0,R7,24,R9,R10)
+
+
+
     
     ########################################################################################################################################################################
     # Interpreter
@@ -351,6 +457,10 @@ def sha_256_one_block():
     i.step()
     
     check=0;
+    print("W 1st row")
+    print(tovalue(i.regfile[0]))
+    print("W 2bd row")
+    print(tovalue(i.regfile[1]))
     
     sigma_one_asm_part2(i,R2,R3,R4,R5,R6)
     #print("sigma 1")
@@ -379,14 +489,107 @@ def sha_256_one_block():
 
    ## i.step()
     i.regfile[2]=add(i.regfile[2],i.regfile[4])
-    print("0th bath of size 2")
-    print(tovalue(i.regfile[2]))
+    #print("0th bath of size 2")
+    #print(tovalue(i.regfile[2]))
     
     
     ####################################
+    #i.regfile[2][8:16]=[0,0,0,1 ,01111101, 00110000, 00011011, 01101001]#[11110001, 00011001, 11110111, 00110001,01101001 ,00011011 ,00110000,01111101]
+    #[00110001, 11110111, 00011001, 11110001 ,01111101, 00110000, 00011011, 01101001]
     
-    loop_one.loop1_batch_part2(i)
-        
+    #print("test")
+    #print(tovalue(i.regfile[2]))
+    #i.regfile[2][8:12]=[00110001, 11110111, 00011001, 11110001]
+    #i.regfile[2][12:16]=[01111101 ,00110000 ,00011011 ,01101001]
+    loop_one.loop1_batch_part2(i,R3,R4,R5,R6,R7,R8,winput[2],winput[3])
+    transfer_two_words_part2(i,R3,0,R2,8,R4,R5)
+    #print("test")
+    #print(tovalue(i.regfile[2]))
+    
+    loop_one.loop1_batch_part2(i,R3,R4,R5,R6,R7,R8,winput[4],winput[5])
+    transfer_two_words_part2(i,R3,0,R2,16,R4,R5)
+    #print("test")
+    #print(tovalue(i.regfile[2]))
+    
+    loop_one.loop1_batch_part2(i,R3,R4,R5,R6,R7,R8,winput[6],winput[7])
+    transfer_two_words_part2(i,R3,0,R2,24,R4,R5)
+    
+    
+    print("W 3rd row")
+    print(tovalue(i.regfile[2]))
+    
+    loop_one.loop1_batch_part2(i,R4,R5,R6,R7,R8,R9,winput[8],winput[9])
+    transfer_two_words_part2(i,R4,0,R3,0,R5,R6)
+    loop_one.loop1_batch_part2(i,R4,R5,R6,R7,R8,R9,winput[10],winput[11])
+    transfer_two_words_part2(i,R4,0,R3,8,R5,R6)
+    loop_one.loop1_batch_part2(i,R4,R5,R6,R7,R8,R9,winput[12],winput[13])
+    transfer_two_words_part2(i,R4,0,R3,16,R5,R6)
+    loop_one.loop1_batch_part2(i,R4,R5,R6,R7,R8,R9,winput[14],winput[15])
+    transfer_two_words_part2(i,R4,0,R3,24,R5,R6)
+    
+    
+    print("W 4th row")
+    print(tovalue(i.regfile[3]))
+    
+
+    loop_one.loop1_batch_part2(i,R5,R6,R7,R8,R9,R10,winput[16],winput[17])
+    transfer_two_words_part2(i,R5,0,R4,0,R6,R7)
+    loop_one.loop1_batch_part2(i,R5,R6,R7,R8,R9,R10,winput[18],winput[19])
+    print(tovalue(i.regfile[5]))
+    transfer_two_words_part2(i,R5,0,R4,8,R6,R7)
+    loop_one.loop1_batch_part2(i,R5,R6,R7,R8,R9,R10,winput[20],winput[21])
+    transfer_two_words_part2(i,R5,0,R4,16,R6,R7)
+    loop_one.loop1_batch_part2(i,R5,R6,R7,R8,R9,R10,winput[22],winput[23])
+    transfer_two_words_part2(i,R5,0,R4,24,R6,R7)
+
+    
+    print("W 5th row")
+    print(tovalue(i.regfile[4]))
+    
+    
+    
+    loop_one.loop1_batch_part2(i,R6,R7,R8,R9,R10,R11,winput[24],winput[25])
+    transfer_two_words_part2(i,R6,0,R5,0,R7,R8)
+    loop_one.loop1_batch_part2(i,R6,R7,R8,R9,R10,R11,winput[26],winput[27])
+    transfer_two_words_part2(i,R6,0,R5,8,R7,R8)
+    loop_one.loop1_batch_part2(i,R6,R7,R8,R9,R10,R11,winput[28],winput[29])
+    transfer_two_words_part2(i,R6,0,R5,16,R7,R8)
+    loop_one.loop1_batch_part2(i,R6,R7,R8,R9,R10,R11,winput[30],winput[31])
+    transfer_two_words_part2(i,R6,0,R5,24,R7,R8)
+
+
+    
+    print("W 6th row")
+    print(tovalue(i.regfile[5]))
+    
+    loop_one.loop1_batch_part2(i,R7,R8,R9,R10,R11,R12,winput[32],winput[33])
+    transfer_two_words_part2(i,R7,0,R6,0,R8,R9)
+    loop_one.loop1_batch_part2(i,R7,R8,R9,R10,R11,R12,winput[34],winput[35])
+    transfer_two_words_part2(i,R7,0,R6,8,R8,R9)
+    loop_one.loop1_batch_part2(i,R7,R8,R9,R10,R11,R12,winput[36],winput[37])
+    transfer_two_words_part2(i,R7,0,R6,16,R8,R9)
+    loop_one.loop1_batch_part2(i,R7,R8,R9,R10,R11,R12,winput[38],winput[39])
+    transfer_two_words_part2(i,R7,0,R6,24,R8,R9)
+    print("W 7th row")
+    print(tovalue(i.regfile[6]))
+
+
+    loop_one.loop1_batch_part2(i,R8,R9,R10,R11,R12,R13,winput[40],winput[41])
+    transfer_two_words_part2(i,R8,0,R7,0,R9,R10)
+    loop_one.loop1_batch_part2(i,R8,R9,R10,R11,R12,R13,winput[42],winput[43])
+    transfer_two_words_part2(i,R8,0,R7,8,R9,R10)
+    loop_one.loop1_batch_part2(i,R8,R9,R10,R11,R12,R13,winput[44],winput[45])
+    transfer_two_words_part2(i,R8,0,R7,16,R9,R10)
+    loop_one.loop1_batch_part2(i,R8,R9,R10,R11,R12,R13,winput[46],winput[47])
+    transfer_two_words_part2(i,R8,0,R7,24,R9,R10)
+    print("W 8th row")
+    print(tovalue(i.regfile[7]))
+
+
+    #print("data")
+    #print(tovalue(i.regfile[0]))
+    #print(tovalue(i.regfile[1]))
+    #print(tovalue(i.regfile[2]))
 
 def test123():
     for x in range(16,64):

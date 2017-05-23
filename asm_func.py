@@ -49,6 +49,7 @@ def sigma_one_asm_part1(p,data,result,calca,calcb,constant):
     p.xor(result,result,calcb)
     
 def sigma_one_asm_part2(i,data,result,calca,calcb,constant):
+   # print("Hi")
     #i.regfile[result]=[ 27,26,25,24,  31,30,29,28, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,  0,0,0,0, 0,0,0,0]
     #i.step()
     
@@ -68,7 +69,7 @@ def sigma_one_asm_part2(i,data,result,calca,calcb,constant):
     i.step()
     i.step()
     #print ([np.binary_repr(n, width=8) for n in i.regfile[data][0:4]])
-    sumationone_one=np.copy(i.regfile[data][0:4])
+    sumationone_one=np.copy(i.regfile[data][28:31])
     i.step()
 
 
@@ -85,7 +86,7 @@ def sigma_one_asm_part2(i,data,result,calca,calcb,constant):
     i.step()
     i.step()
     #print ([np.binary_repr(n, width=8) for n in i.regfile[data][0:4]])
-    sumationone_two=np.copy(i.regfile[data][4:8])
+    sumationone_two=np.copy(i.regfile[data][28:31])
     i.regfile[constant]=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
     i.step()
     i.step()
@@ -125,11 +126,11 @@ def sigma_one_asm_part2(i,data,result,calca,calcb,constant):
     
     
     #print ([np.binary_repr(n, width=8) for n in i.regfile[data][0:4]])
-    sumationone_three=np.copy(i.regfile[data][8:12])
+    sumationone_three=np.copy(i.regfile[data][28:31])
     i.regfile[constant]=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
     i.step()
     i.step()
-    
+    #print("Hi")
     
     
 def sigma_zero_asm_part1(p,data,result,calca,calcb,calcc):
