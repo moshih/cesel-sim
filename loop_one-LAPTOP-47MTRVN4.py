@@ -43,70 +43,27 @@ def add (a,b):
     return tobin(c)
 
 
-def ch_part1(p,x,y,z,result,calc):
-
-def transfer_two_words_part1(p,rega,offseta,regb,offsetb,calca,calcb):
-    p.permute(calca,rega,calca)
-    p.and_(calcb,calca,calcb)
-    
-    p.and_(regb,calca,regb)
-    p.add8(regb,regb,calcb )
-    
-def transfer_two_words_part2(i,rega,offseta,regb,offsetb,calca,calcb):
-    
-    i.regfile[calca]=[0 for x in range(0,32)]
-    i.regfile[calca][offsetb:offsetb+8]=[x for x in range(offseta,offseta+8)]
-    i.step()
-    
-    #print("step 1")
-    #print(tovalue(i.regfile[calca]))
-    
-    
-    i.regfile[calcb]=[0 for x in range(0,32)]
-    i.regfile[calcb][offsetb:offsetb+8]=[255 for x in range(offsetb,offsetb+8)]
-    i.step()
-    
-    #print("step 2")
-    #print(tovalue(i.regfile[calcb]))
-    
-    i.regfile[calca]=[255 for x in range(0,32)]
-    i.regfile[calca][offsetb:32]=[0 for x in range(offsetb, 32)]
-    i.step()
-    
-    #print("step 3")
-    #print(tovalue(i.regfile[regb]))
-    i.step()
-    
-    #print("step 4")
-    #print(tovalue(i.regfile[regb]))
-    #print(" ")
-    
 #2 0 | 1 3 | 0 3 | 0 2
 #2 1 | 1 4 | 0 4 | 0 3
 #winputa=[2,0,1,3,0,3,0,2]
 #winputb=[2,1,1,4,0,4,0,3]
 #winputa=[1, 6 , 1 ,1 , 0, 1 , 0, 0]
 #winputb=[1, 7 ,1 ,2 , 0, 2 , 0, 1]
-
-#winputa=[2 ,2,  1, 5,  0, 5,  0, 4]
-#winputb=[2 ,3,  1, 6,  0, 6,  0, 5]
-#result=R3
-#calca=R4
-#calcb=R5
-#calcc=R6
-#calcd=R7
-#calce=R8
-def loop1_batch_part1(p,result,calca,calcb,calcc,calcd,calce,winputa,winputb):
+winputa=[2 ,2,  1, 5,  0, 5,  0, 4]
+winputb=[2 ,3,  1, 6,  0, 6,  0, 5]
+result=R3
+calca=R4
+calcb=R5
+calcc=R6
+calcd=R7
+calce=R8
+def loop1_batch_part1(p):
     p.permute(calca,winputa[0],calca)
     sigma_one_asm_part1(p,calca,result,calcb,calcc,calcd)
     
     
     p.permute(calca,winputa[2],calca)
     p.and_(calca,calca,calcb)
-    
-    p.permute(calcb,winputb[2],calcb)
-    p.and_(calcb,calcb,calcc)
-    p.add8(calca,calca,calcb)
     
     #p.permute(R5,R2,R5)
     #p.and_(R5,R5,R6)
@@ -126,26 +83,19 @@ def loop1_batch_part1(p,result,calca,calcb,calcc,calcd,calce,winputa,winputb):
     p.permute(calca,winputa[4],calca)
     p.and_(calca,calca,calcb)
     
-    p.permute(calcb,winputb[4],calcb)
-    p.and_(calcb,calcb,calcc)
-    p.add8(calca,calca,calcb)
-    
     #p.permute(R5,R1,R5)
     #p.and_(R5,R5,R6)
     #p.add8(R4,R4,R5)
     asm_func.sigma_zero_asm_part1(p, calca,calcb,calcc,calcd,calce)
     ##p.add8(R3,R3,R5)
-    #transfer_two_words_part1(p,1,0,result,8,10,11)
-
-#debug=1;
-def loop1_batch_part2(i,result,calca,calcb,calcc,calcd,calce,winputa,winputb,debug=0):
+    
+    
+def loop1_batch_part2(i):
     i.regfile[calca]=get_index(winputa[0],winputa[1])+get_index(winputb[0],winputb[1])+[0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
     i.step()
     #print(tovalue(i.regfile[4]))
-    if debug==1:
-        print(" ")
-        print("pre sigma 1")
-        print(tovalue(i.regfile[calca]))
+    print("pre sigma 1")
+    print(tovalue(i.regfile[calca]))
     sigma_one_asm_part2(i,calca,result,calcb,calcc,calcd)
     
     #print("sigma1 of full batch 1")
@@ -153,21 +103,10 @@ def loop1_batch_part2(i,result,calca,calcb,calcc,calcd,calce,winputa,winputb,deb
     
     ### At this point, R3 holds sigma 1 for this batch (first full batch)
     
-    i.regfile[calca]=get_index(winputa[2],winputa[3])+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
+    i.regfile[calca]=get_index(winputa[2],winputa[3])+get_index(winputb[2],winputb[3])+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
     i.step()
-    
-    i.regfile[calcb]=[255,255,255,255, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 ]
+    i.regfile[calcb]=[255,255,255,255, 255,255,255,255, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 ]
     i.step()
-    
-    i.regfile[calcb]=[ 0,0,0,0]+get_index(winputb[2],winputb[3])+[  0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
-    i.step()
-    i.regfile[calcc]=[0,0,0,0,255,255,255,255,  0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 ]
-    i.step()
-    i.step()
-    
-    #print("idk")
-    #print(tovalue(i.regfile[calca]))
-    
     #print(tovalue(i.regfile[4]))
     #i.regfile[5]=[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]+get_index(2,0)+get_index(2,1)+get_index(2,2)
     #i.step()
@@ -193,29 +132,19 @@ def loop1_batch_part2(i,result,calca,calcb,calcc,calcd,calce,winputa,winputb,deb
     #i.step()
     #print(tovalue(i.regfile[5]))
     ##i.step()
-    if debug==1:
-        print(tovalue(i.regfile[calca]))
-        print(tovalue(i.regfile[calcb]))
+    print(tovalue(i.regfile[calca]))
+    print(tovalue(i.regfile[calcb]))
     i.regfile[calca]=add(i.regfile[calca],i.regfile[calcb])
     #print("some of two of full batch 1")
     #print(tovalue(i.regfile[4]))
-    if debug==1:
-        print(tovalue(i.regfile[result]))
-        
+    print(tovalue(i.regfile[result]))
     i.regfile[result]=add(i.regfile[result],i.regfile[calca])
     
     
-    i.regfile[calca]=get_index(winputa[4],winputa[5])+[ 0,0,0,0,0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
+    i.regfile[calca]=get_index(winputa[4],winputa[5])+get_index(winputb[4],winputb[5])+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
     i.step()
-    i.regfile[calcb]=[255,255,255,255, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 , 0,0,0,0, 0,0,0,0, 0,0,0,0 ]
+    i.regfile[calcb]=[255,255,255,255, 255,255,255,255, 0,0,0,0, 0,0,0,0, 0,0,0,0 , 0,0,0,0, 0,0,0,0, 0,0,0,0 ]
     i.step()
-    
-    i.regfile[calcb]=[ 0,0,0,0]+get_index(winputb[4],winputb[5])+[  0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
-    i.step()
-    i.regfile[calcc]=[0,0,0,0,255,255,255,255,  0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 ]
-    i.step()
-    i.step()
-    
     #print(tovalue(i.regfile[4]))
     #i.regfile[5]=[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]+get_index(1,0)+get_index(1,1)+get_index(1,2)
     #i.step()
@@ -227,20 +156,9 @@ def loop1_batch_part2(i,result,calca,calcb,calcc,calcd,calce,winputa,winputb,deb
     asm_func.sigma_zero_asm_part2(i, calca,calcb,calcc,calcd,calce)
     #print(tovalue(i.regfile[5]))
     #print(tovalue(i.regfile[3]))
-    if debug==1:
-        print(tovalue(i.regfile[calcb]))
-        print(" ")
+    print(tovalue(i.regfile[calcb]))
     i.regfile[result]=add(i.regfile[result],i.regfile[calcb])
-    if debug==1:
-        print("finished of full batch 1")
-        print(tovalue(i.regfile[result]))
-    #print(tovalue(i.regfile[1]))
-    
-    
-    #print("copying over")
-    #transfer_two_words_part2(i,1,0,result,8,10,11)
-    #print(tovalue(i.regfile[result]))
-    #print(tovalue(i.regfile[1]))
-    
-
+    print("finished of full batch 1")
+    print(tovalue(i.regfile[result]))
+    print(i.regfile[result])
     #print ([np.binary_repr(n, width=8) for n in i.regfile[result][0:8]])
