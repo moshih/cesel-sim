@@ -344,6 +344,7 @@ def transfer_two_words_part2(i,rega,offseta,regb,offsetb,calca,calcb):
     #print(" ")
 from loop_two_functions import sumation_one_asm_part1, sumation_one_asm_part2,sumation_zero_asm_part1, sumation_zero_asm_part2
 from loop_two import loop2_part2,loop2_part1
+
 def sha_256_one_block():
     #one_block=np.zeros(total_array_len(64), dtype=np.uint8); 
     R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
@@ -425,8 +426,10 @@ def sha_256_one_block():
     transfer_two_words_part1(p,R8,0,R7,16,R9,R10)                            
     loop_one.loop1_batch_part1(p,R8,R9,R10,R11,R12,R13,winput[46],winput[47])
     transfer_two_words_part1(p,R8,0,R7,24,R9,R10)
-
-    loop2_part1(p,0)
+    
+    for j in xrange(64):
+        loop2_part1(p,j)
+    
 
     #sumation_zero_asm_part1(p,R8,R9,R10,R11,R12)
     
@@ -542,7 +545,15 @@ def sha_256_one_block():
     print("testing----------------------")
     i.regfile[8]=H0
     #print(tovalue(i.regfile[8]))
-    loop2_part2(i,0)
+    
+    for j in xrange(64):
+        loop2_part2(i,j)
+    
+    
+    
+    
+    i.regfile[R8]=add(i.regfile[R8],i.regfile[R9])
+    print(tovalue(i.regfile[R8]))
     #sumation_zero_asm_part2(i,R8,R9,R10,R11,R12)
     #print(tovalue(i.regfile[9]))
     

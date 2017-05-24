@@ -10,6 +10,7 @@ from __future__ import print_function
 
 import numpy as np
 from asm_func import sigma_one_asm_part1,sigma_one_asm_part2,get_index
+from loop_two_functions import sumation_one_asm_part1, sumation_one_asm_part2,sumation_zero_asm_part1, sumation_zero_asm_part2,ch_part1,ch_part2
 R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
 
 ##R8 is the data!!!!!!!!!!!!!!!!!
@@ -53,12 +54,117 @@ def add (a,b):
     return tobin(c)
 
 
-from loop_two_functions import sumation_one_asm_part1, sumation_one_asm_part2,sumation_zero_asm_part1, sumation_zero_asm_part2
+from loop_two_functions import sumation_one_asm_part1, sumation_one_asm_part2,sumation_zero_asm_part1, sumation_zero_asm_part2,maj_part1,maj_part2
 #(p,data,result,calca,calcb,calcc)
 def loop2_part1(p,iteration):
-    sumation_one_asm_part1(p,R8,R9,R10,R11,R12)
     
+    p.permute(R9,R8,R9)
+    
+    p.and_(R11,R8,R8)
+    sumation_one_asm_part1(p,R11,R10,R12,R13,R14)
+    #add
+    p.permute(R11,R8,R11)
+    p.permute(R12,R8,R12)
+    p.permute(R13,R8,R13)
+    ch_part1(p,R11,R12,R13,R10,R14)
+    #add
+    #add
+    
+    ##geting W
+    row=int((iteration-iteration%8)/8)
+    p.permute(R10,row,R10)
+    p.permute(R9,R9,R10)
+    #add
+    p.and_(R9,R9,R10)
+    
+    p.permute(R11,R8,R10)
+    sumation_zero_asm_part1(p,R11,R10,R12,R13,R14)
+    
+    p.permute(R11,R8,R11)
+    p.permute(R12,R8,R12)
+    p.permute(R13,R8,R13)
+    
+    maj_part1(p,R11,R12,R13,R14,R15)
+    #add
+    p.and_(R10,R11,R10)
+    #add
+    p.permute(R10,R8,R10)
+    p.and_(R10,R11,R10)
+    #add
+    p.and_(R8,R9,R9)
     
 def loop2_part2(i,iteration):
-    sumation_one_asm_part2(i,R8,R9,R10,R11,R12)
+    i.regfile[R9]=[0 for x in range(0,16)]+get_index(8,7)+[0 for x in range(20,32)]
+    i.step()
+    #print(tovalue(i.regfile[R9]))
+    i.step()
+    #print(tovalue(i.regfile[R10]))
+    
+    sumation_one_asm_part2(i,R11,R10,R12,R13,R14)
+    #print(tovalue(i.regfile[R10]))
+
+    i.regfile[R9]=add(i.regfile[R9],i.regfile[R10])
+    
+    i.regfile[R11]=[0 for x in range(0,16)]+get_index(8,4)+[0 for x in range(20,32)]
+    i.step()
+    i.regfile[R12]=[0 for x in range(0,16)]+get_index(8,5)+[0 for x in range(20,32)]
+    i.step()
+    i.regfile[R13]=[0 for x in range(0,16)]+get_index(8,6)+[0 for x in range(20,32)]
+    i.step()
+    ch_part2(i,R11,R12,R13,R10,R14)
+    #print(tovalue(i.regfile[R10]))
+    i.regfile[R9]=add(i.regfile[R9],i.regfile[R10])
+    i.regfile[R10]=[0 for x in range(0,16)]+K[iteration]+[0 for x in range(20,32)]
+    #print(tovalue(i.regfile[R10]))
+    
+    ##geting W
+    row=int((iteration-iteration%8)/8)
+    col=iteration%8
+    i.regfile[R9]=add(i.regfile[R9],i.regfile[R10])
+    i.regfile[R10]=[0 for x in range(0,16)]+get_index(row,col)+[0 for x in range(20,32)]
+    i.step()
+    #print(tovalue(i.regfile[R10]))
+    #print(i.regfile[R0])
+    #print ([np.binary_repr(n, width=8) for n in i.regfile[R0][0:4]])
+    i.regfile[R9]=add(i.regfile[R9],i.regfile[R10])
+    #print(tovalue(i.regfile[R9]))
+    i.regfile[R10]=get_index(8,4)+[0 for x in range(0,12)]+get_index(8,4)+[0 for x in range(16,28)]
+    i.step()
+    i.regfile[R10]=[255,255,255,255]+[0 for x in range(0,12)]+[255,255,255,255]+[0 for x in range(16,28)]
+    i.step()
+    #print(tovalue(i.regfile[R9]))
+    
+    i.regfile[R10]=[0,1,2,3]+[0 for x in range(0,28)]
+    i.step()
+    sumation_zero_asm_part2(i,R11,R10,R12,R13,R14)
+    #print(tovalue(i.regfile[R10]))
+    
+    
+    i.regfile[R11]=[0,1,2,3]+[0 for x in range(0,28)]
+    i.step()
+    i.regfile[R12]=[4,5,6,7]+[0 for x in range(0,28)]
+    i.step()
+    i.regfile[R13]=[8,9,10,11]+[0 for x in range(0,28)]
+    i.step()
+    
+    maj_part2(i,R11,R12,R13,R14,R15)
+    
+    i.regfile[R10]=add(i.regfile[R10],i.regfile[R14])
+    i.regfile[R11]=[255,255,255,255]+[0 for x in range(0,28)]
+    i.step()
+    #print(tovalue(i.regfile[R10]))
+    i.regfile[R9]=add(i.regfile[R9],i.regfile[R10])
+    #print(tovalue(i.regfile[R9]))
+    
+    i.regfile[R10]=[0,0,0,0, 0,1,2,3, 4,5,6,7, 8,9,10,11, 12,13,14,15, 16,17,18,19, 20,21,22,23, 24,25,26,27]
+    i.step()
+    
+    i.regfile[R11]=[0,0,0,0]+[255 for x in range(0,28)]
+    i.step()
+    i.regfile[R9]=add(i.regfile[R9],i.regfile[R10])
+    #print(tovalue(i.regfile[R9]))
+    i.step()
+    #print(tovalue(i.regfile[R8]))
+    
+    
     
