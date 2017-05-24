@@ -43,7 +43,7 @@ def add (a,b):
     return tobin(c)
 
 
-def ch_part1(p,x,y,z,result,calc):
+
 
 def transfer_two_words_part1(p,rega,offseta,regb,offsetb,calca,calcb):
     p.permute(calca,rega,calca)
