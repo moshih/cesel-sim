@@ -2,14 +2,6 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-from loop_one_func import sigma_one_asm_part1,sigma_one_asm_part2,get_index
-from loop_one import loop1_batch_part1,loop1_batch_part2
-
-
-
-from winput import winput
-from loop_two_functions import sumation_one_asm_part1, sumation_one_asm_part2,sumation_zero_asm_part1, sumation_zero_asm_part2
-from loop_two import loop2_part2,loop2_part1
 
 # Instruction constants
 INSTR_BITS = 16
@@ -269,7 +261,8 @@ class Interpreter(object):
         return "Interpreter(state='{}', pc={})".format(self.state, self.pc)
 
 np.set_printoptions(threshold=np.nan)
-
+import asm_func
+from asm_func import sigma_one_asm_part1,sigma_one_asm_part2,get_index
 def tovalue(i):
     a=[]
     for x in range(0,8):
@@ -301,124 +294,79 @@ def add (a,b):
         c[x]=c[x]+d[x]
     return tobin(c)
 
-
-H0=[0x6a,0x09,0xe6,0x67,
-0xbb,0x67,0xae,0x85,
-0x3c,0x6e,0xf3,0x72,
-0xa5,0x4f,0xf5,0x3a,
-0x51,0x0e,0x52,0x7f,
-0x9b,0x05,0x68,0x8c,
-0x1f,0x83,0xd9,0xab,
-0x5b,0xe0,0xcd,0x19]
-
-
-#transfers 2 32 bit words from rega to reg b, using the offsets (in terms of 8bit values)
-def transfer_two_words_part1(p,rega,offseta,regb,offsetb,calca,calcb):
-    
-    #load constant into calca
-    p.permute(calca,rega,calca)
-    #load constant into calcb
-    p.and_(calcb,calca,calcb)
-    #load constant into calca
-    p.and_(regb,calca,regb)
-    p.add8(regb,regb,calcb )
-    
-def transfer_two_words_part2(i,rega,offseta,regb,offsetb,calca,calcb):
-    
-    i.regfile[calca]=[0 for x in range(0,32)]
-    i.regfile[calca][offsetb:offsetb+8]=[x for x in range(offseta,offseta+8)]
-    i.step()
-    i.regfile[calcb]=[0 for x in range(0,32)]
-    i.regfile[calcb][offsetb:offsetb+8]=[255 for x in range(offsetb,offsetb+8)]
-    i.step()
-    i.regfile[calca]=[255 for x in range(0,32)]
-    i.regfile[calca][offsetb:32]=[0 for x in range(offsetb, 32)]
-    i.step()
-    i.step()
-
-
 def sha_256_one_block():
     #one_block=np.zeros(total_array_len(64), dtype=np.uint8); 
     R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
 
     # Program Definition
     p = Program()
-
-    loop1_batch_part1(p,R2,R3,R4,R5,R6,R7,winput[0],winput[1])
+    #first load into the first 2 registers, the message block
     
-
+    #put in the 14th and 15th word into the register of 2
+    p.permute(R2,R1,R3)
+    #now we apply sigma_one
+    #R2 is the data
+    #R4 is used for calcuations
+    #R5 is used for calcuations
+    #R3 loads the result
+    #R6 is used for calculation
+    data=R2
+    calca=R4
+    calcb=R5
+    calc=R6
+    result=R3
+    
+    #p.permute(R4,R2,R6)
+    sigma_one_asm_part1(p,R2,R3,R4,R5,R6)
+    
+    
+    
+    #R0 and R1 have the original data
+    #R2 is the sigma1 of the next 2
+    p.permute(R2,R0,R2)
+    ##p.add8(R2,R2,R3)
+    p.permute(R3,R1,R3)
+    ##p.add8(R2,R2,R3)
+    #now create and add sigma0
+    #R0 and R1 have the original data
+    #R2 is the sigma1 +2 things 
+    
+    asm_func.sigma_zero_asm_part1(p, R3,R4,R5,R6,R7)
+    
+    ##p.add8(R2,R2,R4)
+    #now create and add sigma0
+    #R0 and R1 have the original data
+    #R2 contains W17 and W18
     ########################################################
-    loop1_batch_part1(p,R3,R4,R5,R6,R7,R8,winput[2],winput[3])
-    transfer_two_words_part1(p,R3,0,R2,8,R4,R5)
-    
-    loop1_batch_part1(p,R3,R4,R5,R6,R7,R8,winput[4],winput[5])
-    transfer_two_words_part1(p,R3,0,R2,16,R4,R5)
-    
-    loop1_batch_part1(p,R3,R4,R5,R6,R7,R8,winput[6],winput[7])
-    transfer_two_words_part1(p,R3,0,R2,24,R4,R5)
-    
-    ###########################
-    loop1_batch_part1(p,R4,R5,R6,R7,R8,R9,winput[8],winput[9])
-    transfer_two_words_part1(p,R4,0,R3,0,R5,R6)
-    
-    loop1_batch_part1(p,R4,R5,R6,R7,R8,R9,winput[10],winput[11])
-    transfer_two_words_part1(p,R4,0,R3,8,R5,R6)
-    
-    loop1_batch_part1(p,R4,R5,R6,R7,R8,R9,winput[12],winput[13])
-    transfer_two_words_part1(p,R4,0,R3,16,R5,R6)
-    
-    loop1_batch_part1(p,R4,R5,R6,R7,R8,R9,winput[14],winput[15])
-    transfer_two_words_part1(p,R4,0,R3,24,R5,R6)
+    p.permute(R4,R2,R4)
+    sigma_one_asm_part1(p,R4,R3,R5,R6,R7)
     
     
-     ###########################
-    loop1_batch_part1(p,R5,R6,R7,R8,R9,R10,winput[16],winput[17])
-    transfer_two_words_part1(p,R5,0,R4,0,R6,R7)
-    loop1_batch_part1(p,R5,R6,R7,R8,R9,R10,winput[18],winput[19])
-    transfer_two_words_part1(p,R5,0,R4,8,R6,R7)
-    loop1_batch_part1(p,R5,R6,R7,R8,R9,R10,winput[20],winput[21])
-    transfer_two_words_part1(p,R5,0,R4,16,R6,R7)
-    loop1_batch_part1(p,R5,R6,R7,R8,R9,R10,winput[22],winput[23])
-    transfer_two_words_part1(p,R5,0,R4,24,R6,R7)
-
-     ###########################
-    loop1_batch_part1(p,R6,R7,R8,R9,R10,R11,winput[24],winput[25])
-    transfer_two_words_part1(p,R6,0,R5,0,R7,R8)
-    loop1_batch_part1(p,R6,R7,R8,R9,R10,R11,winput[26],winput[27])
-    transfer_two_words_part1(p,R6,0,R5,8,R7,R8)
-    loop1_batch_part1(p,R6,R7,R8,R9,R10,R11,winput[28],winput[29])
-    transfer_two_words_part1(p,R6,0,R5,16,R7,R8)
-    loop1_batch_part1(p,R6,R7,R8,R9,R10,R11,winput[30],winput[31])
-    transfer_two_words_part1(p,R6,0,R5,24,R7,R8)
+    p.permute(R4,R1,R4)
+    p.and_(R4,R4,R5)
     
-    ###############################--------
- 
+    p.permute(R5,R2,R5)
+    p.and_(R5,R5,R6)
+    p.add8(R4,R4,R5)
     
-
-    loop1_batch_part1(p,R7,R8,R9,R10,R11,R12,winput[32],winput[33])
-    transfer_two_words_part1(p,R7,0,R6,0,R8,R9)                              
-    loop1_batch_part1(p,R7,R8,R9,R10,R11,R12,winput[34],winput[35]) 
-    transfer_two_words_part1(p,R7,0,R6,8,R8,R9)                              
-    loop1_batch_part1(p,R7,R8,R9,R10,R11,R12,winput[36],winput[37]) 
-    transfer_two_words_part1(p,R7,0,R6,16,R8,R9)                             
-    loop1_batch_part1(p,R7,R8,R9,R10,R11,R12,winput[38],winput[39]) 
-    transfer_two_words_part1(p,R7,0,R6,24,R8,R9)
-
-
-    loop1_batch_part1(p,R8,R9,R10,R11,R12,R13,winput[40],winput[41])
-    transfer_two_words_part1(p,R8,0,R7,0,R9,R10)                             
-    loop1_batch_part1(p,R8,R9,R10,R11,R12,R13,winput[42],winput[43])
-    transfer_two_words_part1(p,R8,0,R7,8,R9,R10)                             
-    loop1_batch_part1(p,R8,R9,R10,R11,R12,R13,winput[44],winput[45])
-    transfer_two_words_part1(p,R8,0,R7,16,R9,R10)                            
-    loop1_batch_part1(p,R8,R9,R10,R11,R12,R13,winput[46],winput[47])
-    transfer_two_words_part1(p,R8,0,R7,24,R9,R10)
+    p.permute(R5,R0,R5)
+    p.and_(R5,R5,R6)
     
-    for j in xrange(64):
-        loop2_part1(p,j)
-  
-
-
+    p.permute(R6,R1,R6)
+    p.and_(R6,R6,R7)
+    p.add8(R5,R5,R6)
+    
+    ##add_32 bit word R4, R4,R5
+    ##add_32 bit word R3,R3,R4
+    
+    #sigma_zero
+    p.permute(R4,R0,R4)
+    p.and_(R4,R4,R5)
+    
+    p.permute(R5,R1,R5)
+    p.and_(R5,R5,R6)
+    p.add8(R4,R4,R5)
+    asm_func.sigma_zero_asm_part1(p, R4,R5,R6,R7,R8)
     
     ########################################################################################################################################################################
     # Interpreter
@@ -427,112 +375,99 @@ def sha_256_one_block():
     for x in range(0,32):
         i.regfile[0][x]=x
         i.regfile[1][x]=x+32
+    i.regfile[R3]=[ 27,26,25,24,  31,30,29,28, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,  0,0,0,0, 0,0,0,0]
+    i.step()
     
+    sigma_one_asm_part2(i,R2,R3,R4,R5,R6)
+    
+    
+    i.regfile[2]=get_index(0,0)+get_index(0,1)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0  ]
+    i.step()
+    i.regfile[2]=add(i.regfile[2],i.regfile[3])
+    
+    ##i.step()
+    i.regfile[3]=get_index(1,1)+get_index(1,2)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0  ]
+    i.step()
+    
+    
+    ##i.step()
+    i.regfile[2]=add(i.regfile[2],i.regfile[3])
+    
+    i.regfile[3]=get_index(0,1)+get_index(0,2)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0  ]
+    asm_func.sigma_zero_asm_part2(i, R3,R4,R5,R6,R7)
     
 
-    print("W 1st row")
-    print(tovalue(i.regfile[0]))
-    print("W 2bd row")
-    print(tovalue(i.regfile[1]))
-    
-    loop1_batch_part2(i,R2,R3,R4,R5,R6,R7,winput[0],winput[1])
-    
-
-    loop1_batch_part2(i,R3,R4,R5,R6,R7,R8,winput[2],winput[3])
-    transfer_two_words_part2(i,R3,0,R2,8,R4,R5)
-
-    
-    loop1_batch_part2(i,R3,R4,R5,R6,R7,R8,winput[4],winput[5])
-    transfer_two_words_part2(i,R3,0,R2,16,R4,R5)
-
-    
-    loop1_batch_part2(i,R3,R4,R5,R6,R7,R8,winput[6],winput[7])
-    transfer_two_words_part2(i,R3,0,R2,24,R4,R5)
-    
-    
-    print("W 3rd row")
+   ## i.step()
+    i.regfile[2]=add(i.regfile[2],i.regfile[4])
+    print("0th bath of size 2")
     print(tovalue(i.regfile[2]))
     
-    loop1_batch_part2(i,R4,R5,R6,R7,R8,R9,winput[8],winput[9])
-    transfer_two_words_part2(i,R4,0,R3,0,R5,R6)
-    loop1_batch_part2(i,R4,R5,R6,R7,R8,R9,winput[10],winput[11])
-    transfer_two_words_part2(i,R4,0,R3,8,R5,R6)
-    loop1_batch_part2(i,R4,R5,R6,R7,R8,R9,winput[12],winput[13])
-    transfer_two_words_part2(i,R4,0,R3,16,R5,R6)
-    loop1_batch_part2(i,R4,R5,R6,R7,R8,R9,winput[14],winput[15])
-    transfer_two_words_part2(i,R4,0,R3,24,R5,R6)
+    
+    ####################################
+    
+    i.regfile[4]=get_index(2,0)+get_index(2,1)+get_index(2,2)+get_index(2,3)+get_index(2,4)+get_index(2,5)+get_index(2,6)+get_index(2,7)
+    i.step()
+    #print(tovalue(i.regfile[4]))
+    sigma_one_asm_part2(i,R4,R3,R5,R6,R7)
+    #print("sigma1 of full batch 1")
+    #print(tovalue(i.regfile[3]))
+    
+    ### At this point, R3 holds sigma 1 for this batch (first full batch)
+    
+    i.regfile[4]=get_index(1,3)+get_index(1,4)+get_index(1,5)+get_index(1,6)+get_index(1,7)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0]
+    i.step()
+    i.regfile[5]=[255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 0,0,0,0, 0,0,0,0, 0,0,0,0 ]
+    i.step()
+    #print(tovalue(i.regfile[4]))
+    i.regfile[5]=[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]+get_index(2,0)+get_index(2,1)+get_index(2,2)
+    i.step()
+    i.regfile[6]=[0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,  255,255,255,255, 255,255,255,255, 255,255,255,255 ]
+    i.step()
+    #print(tovalue(i.regfile[5]))
+    i.step()
+    #print(tovalue(i.regfile[4]))
+    
+    i.regfile[5]=get_index(0,2)+get_index(0,3)+get_index(0,4)+get_index(0,5)+get_index(0,6)+get_index(0,7)+[  0,0,0,0, 0,0,0,0]
+    i.step()
+    i.regfile[6]=[255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 0,0,0,0, 0,0,0,0 ]
+    i.step()
+    #print(tovalue(i.regfile[4]))
+    #print(tovalue(i.regfile[5]))
+    
+    i.regfile[6]=[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]+get_index(1,0)+get_index(1,1)
+    i.step()
+    i.regfile[7]=[0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,  0,0,0,0, 255,255,255,255, 255,255,255,255 ]
+    i.step()
+    #print(tovalue(i.regfile[6]))
+    #print(tovalue(i.regfile[5]))
+    i.step()
+    #print(tovalue(i.regfile[5]))
+    ##i.step()
+    i.regfile[4]=add(i.regfile[4],i.regfile[5])
+    #print("some of two of full batch 1")
+    #print(tovalue(i.regfile[4]))
+    i.regfile[3]=add(i.regfile[3],i.regfile[4])
     
     
-    print("W 4th row")
+    i.regfile[4]=get_index(0,3)+get_index(0,4)+get_index(0,5)+get_index(0,6)+get_index(0,7)+[ 0,0,0,0, 0,0,0,0, 0,0,0,0]
+    i.step()
+    i.regfile[5]=[255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 0,0,0,0, 0,0,0,0, 0,0,0,0 ]
+    i.step()
+    #print(tovalue(i.regfile[4]))
+    i.regfile[5]=[ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]+get_index(1,0)+get_index(1,1)+get_index(1,2)
+    i.step()
+    i.regfile[6]=[0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,  255,255,255,255, 255,255,255,255, 255,255,255,255 ]
+    i.step()
+    #print(tovalue(i.regfile[5]))
+    i.step()
+    #print(tovalue(i.regfile[4]))
+    asm_func.sigma_zero_asm_part2(i, R4,R5,R6,R7,R8)
+    #print(tovalue(i.regfile[5]))
+    #print(tovalue(i.regfile[3]))
+    i.regfile[3]=add(i.regfile[3],i.regfile[5])
+    print("finished of full batch 1")
     print(tovalue(i.regfile[3]))
-    
-
-    loop1_batch_part2(i,R5,R6,R7,R8,R9,R10,winput[16],winput[17])
-    transfer_two_words_part2(i,R5,0,R4,0,R6,R7)
-    loop1_batch_part2(i,R5,R6,R7,R8,R9,R10,winput[18],winput[19])
-    print(tovalue(i.regfile[5]))
-    transfer_two_words_part2(i,R5,0,R4,8,R6,R7)
-    loop1_batch_part2(i,R5,R6,R7,R8,R9,R10,winput[20],winput[21])
-    transfer_two_words_part2(i,R5,0,R4,16,R6,R7)
-    loop1_batch_part2(i,R5,R6,R7,R8,R9,R10,winput[22],winput[23])
-    transfer_two_words_part2(i,R5,0,R4,24,R6,R7)
-
-    
-    print("W 5th row")
-    print(tovalue(i.regfile[4]))
-    
-    
-    
-    loop1_batch_part2(i,R6,R7,R8,R9,R10,R11,winput[24],winput[25])
-    transfer_two_words_part2(i,R6,0,R5,0,R7,R8)
-    loop1_batch_part2(i,R6,R7,R8,R9,R10,R11,winput[26],winput[27])
-    transfer_two_words_part2(i,R6,0,R5,8,R7,R8)
-    loop1_batch_part2(i,R6,R7,R8,R9,R10,R11,winput[28],winput[29])
-    transfer_two_words_part2(i,R6,0,R5,16,R7,R8)
-    loop1_batch_part2(i,R6,R7,R8,R9,R10,R11,winput[30],winput[31])
-    transfer_two_words_part2(i,R6,0,R5,24,R7,R8)
-
-
-    
-    print("W 6th row")
-    print(tovalue(i.regfile[5]))
-    
-    loop1_batch_part2(i,R7,R8,R9,R10,R11,R12,winput[32],winput[33])
-    transfer_two_words_part2(i,R7,0,R6,0,R8,R9)
-    loop1_batch_part2(i,R7,R8,R9,R10,R11,R12,winput[34],winput[35])
-    transfer_two_words_part2(i,R7,0,R6,8,R8,R9)
-    loop1_batch_part2(i,R7,R8,R9,R10,R11,R12,winput[36],winput[37])
-    transfer_two_words_part2(i,R7,0,R6,16,R8,R9)
-    loop1_batch_part2(i,R7,R8,R9,R10,R11,R12,winput[38],winput[39])
-    transfer_two_words_part2(i,R7,0,R6,24,R8,R9)
-    print("W 7th row")
-    print(tovalue(i.regfile[6]))
-
-
-    loop1_batch_part2(i,R8,R9,R10,R11,R12,R13,winput[40],winput[41])
-    transfer_two_words_part2(i,R8,0,R7,0,R9,R10)
-    loop1_batch_part2(i,R8,R9,R10,R11,R12,R13,winput[42],winput[43])
-    transfer_two_words_part2(i,R8,0,R7,8,R9,R10)
-    loop1_batch_part2(i,R8,R9,R10,R11,R12,R13,winput[44],winput[45])
-    transfer_two_words_part2(i,R8,0,R7,16,R9,R10)
-    loop1_batch_part2(i,R8,R9,R10,R11,R12,R13,winput[46],winput[47])
-    transfer_two_words_part2(i,R8,0,R7,24,R9,R10)
-    print("W 8th row")
-    print(tovalue(i.regfile[7]))
-    
-    print("testing----------------------")
-    i.regfile[8]=H0
-
-    
-    for j in xrange(64):
-        loop2_part2(i,j)
-    
-    
-    
-    
-    i.regfile[R8]=add(i.regfile[R8],i.regfile[R9])
-    print(tovalue(i.regfile[R8]))
-
+        
 
 def test123():
     for x in range(16,64):
@@ -550,7 +485,7 @@ def test123():
         d1=int((d-d%8)/8)
         d2=d%8
         print(a1,a2, "|",b1,b2, "|",c1,c2, "|",d1,d2)
-
+from cesel_extra import sigma_zero
 if __name__ == '__main__':
     #sha_a()
     #main()
