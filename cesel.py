@@ -399,12 +399,27 @@ def test123():
         d1=int((d-d%8)/8)
         d2=d%8
         print(a1,a2, "|",b1,b2, "|",c1,c2, "|",d1,d2)
-from cesel_extra import sigma_zero
+#from cesel_extra import sigma_zero
+def main():
+    #one_block=np.zeros(total_array_len(64), dtype=np.uint8); 
+    R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15 = np.arange(16)
+
+    # Program Definition
+    p = Program()
+    p.ror(R0,R1,R4)
+
+
+    
+    ########################################################################################################################################################################
+    # Interpreter
+    i = Interpreter(program=p, regfile={i: i for i in range(16)})
+    i.step()
+    print(i.regfile[R0])
 if __name__ == '__main__':
     #sha_a()
-    #main()
+    main()
     #test123()
-    sha_256_one_block()
+   # sha_256_one_block()
     #sumation_zero()
     #sumation_one()
     #sigma_zero()
